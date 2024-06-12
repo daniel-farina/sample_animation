@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abstract Animation</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #f0f0f0;
+            transition: background 0.3s ease;
+        }
+        canvas {
+            display: block;
+        }
+        .dark-mode {
+            background: #121212;
+        }
+        .toggle-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .dark-mode .toggle-button {
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <button class="toggle-button" id="toggleMode">Toggle Dark Mode</button>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let points = [];
+        const lightColors = [
+            '#BBC2FF', '#CBCFFF', '#D9DCFF', '#F3F4FF', '#F8F9FF', // Purple shades
+            '#77E6DF', '#91FAE8', '#C2FFFB', '#E1FFFF', '#F4FFFF'  // Teal shades
+        ];
+        const darkColors = [
+            '#5D63A5', '#6B72B1', '#7B81BD', '#B0B4D4', '#D8D9E6', // Darker Purple shades
+            '#3A7974', '#47A8A2', '#6EC3BE', '#98DAD8', '#C8F1F0'  // Darker Teal shades
+        ];
+        let colors = lightColors;
+        let isDarkMode = false;
+
+        function init() {
+            points = [];
+            for (let i = 0; i < 40; i++) {
+                points.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 150 + 50, // Larger radius for some objects
+                    dx: Math.random() * 2 - 1,
+                    dy: Math.random() * 2 - 1,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let point of points) {
+                ctx.beginPath();
+                let gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, point.radius);
+                gradient.addColorStop(0, `${point.color}80`); // Adding transparency
+                gradient.addColorStop(0.5, `${point.color}60`); // More transparent
+                gradient.addColorStop(1, `${point.color}00`); // Fully transparent
+                ctx.fillStyle = gradient;
+                ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2, false);
+                ctx.fill();
+
+                point.x += point.dx;
+                point.y += point.dy;
+
+                if (point.x + point.radius > canvas.width || point.x - point.radius < 0) {
+                    point.dx = -point.dx;
+                }
+
+                if (point.y + point.radius > canvas.height || point.y - point.radius < 0) {
+                    point.dy = -point.dy;
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            colors = isDarkMode ? darkColors : lightColors;
+            init();
+        }
+
+        document.getElementById('toggleMode').addEventListener('click', toggleDarkMode);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        init();
+        draw();
+    </script>
+</body>
+</html>
